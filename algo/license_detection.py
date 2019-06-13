@@ -25,9 +25,9 @@ class Detection(object):
         """裁剪图片"""
         cols = self.image.shape[1]
         rows = self.image.shape[0]
-        wh_ratio = self.width / self.height
+        wh_ratio = self.width / float(self.height)
 
-        if cols / rows > wh_ratio:
+        if cols / float(rows) > wh_ratio:
             crop_size = (int(rows * wh_ratio), rows)
         else:
             crop_size = (cols, int(cols / wh_ratio))
@@ -45,12 +45,12 @@ class Detection(object):
 
     def get_detections(self):
         """车牌框检测"""
-        blob = dnn.blobFromImage(self.image, self.scale_factor, (self.width, self.height), self.mean)
+        blob = dnn.blobFromImage(self.image, self.scale_factor, (self.width, self.height), self.mean, swapRB=True)
         net = dnn.readNetFromCaffe(self.prototxt_path, self.caffemodel_path)
         net.setInput(blob)
         start_time = time.time()
         detections = net.forward()
-        print("Cost time: {:.3f}s".format(time.time() - start_time))
+        # print("Cost time: {:.3f}s".format(time.time() - start_time))
         return detections
 
     def bounding_box_fileter_by_wh_ratio(self, detections, cols, rows):
@@ -66,20 +66,23 @@ class Detection(object):
                 yRightTop = int(detections[0, 0, i, 6] * rows) + 8
 
                 height, width = yRightTop - yLeftBottom, xRightTop - xLeftBottom
+                print(height / width)
                 if height / width <= 0.6:
                     object_info[i] = [confidence, class_id, yRightTop, yLeftBottom, xRightTop, xLeftBottom]
+        print(object_info)
         return object_info
 
     def bounding_box_filter_by_width(self, object_info):
         """通过宽度筛选出较小的目标框"""
         key = 0
-        if len(object_info) > 1:
+        if len(object_info) >= 1:
             temp = float("inf")
             for i in object_info.keys():
                 bounding_box_width = object_info[i][4] - object_info[i][5]
                 if bounding_box_width < temp:
                     temp = bounding_box_width
                     key = i
+        # print(key, object_info.keys())
         if key in object_info.keys():
             return object_info[key]
         return None
@@ -110,7 +113,7 @@ class Detection(object):
 if __name__ == "__main__":
     width, height = 1024, 720
     prototxt_path, caffemodel_path = "../resources/MobileNetSSD_test.prototxt", "../resources/lpr.caffemodel"
-    test_dir = "../21901"
+    test_dir = "../27490"
     for f in os.listdir(test_dir):
         if f.endswith(".jpg"):
             image_path = test_dir + "/" + f
