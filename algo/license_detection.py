@@ -38,10 +38,10 @@ class Detection(object):
         yRightTop = int(yLeftBottom + crop_size[1])
         self.image = self.image[yLeftBottom:yRightTop, xLeftBottom:xRightTop]
 
-        cols = self.image.shape[1]
-        rows = self.image.shape[0]
+        # cols = self.image.shape[1]
+        # rows = self.image.shape[0]
 
-        return cols, rows
+        return self.image
 
     def get_detections(self):
         """车牌框检测"""
@@ -53,7 +53,7 @@ class Detection(object):
         # print("Cost time: {:.3f}s".format(time.time() - start_time))
         return detections
 
-    def bounding_box_fileter_by_wh_ratio(self, detections, cols, rows):
+    def bounding_box_filter_by_wh_ratio(self, detections, cols, rows):
         """筛选出长宽比不大于0.6的目标框"""
         object_info = {}
         for i in range(detections.shape[2]):
@@ -66,10 +66,10 @@ class Detection(object):
                 yRightTop = int(detections[0, 0, i, 6] * rows) + 8
 
                 height, width = yRightTop - yLeftBottom, xRightTop - xLeftBottom
-                print(height / width)
+                # print(height / width)
                 if height / width <= 0.6:
                     object_info[i] = [confidence, class_id, yRightTop, yLeftBottom, xRightTop, xLeftBottom]
-        print(object_info)
+        # print(object_info)
         return object_info
 
     def bounding_box_filter_by_width(self, object_info):
@@ -90,8 +90,9 @@ class Detection(object):
     def get_bounding_box(self):
         """获取目标框坐标位置及对应置信度"""
         detections = self.get_detections()
-        cols, rows = self.crop_image()
-        object_info = self.bounding_box_fileter_by_wh_ratio(detections, cols, rows)
+        image = self.crop_image()
+        cols, rows = image.shape[1], image.shape[0]
+        object_info = self.bounding_box_filter_by_wh_ratio(detections, cols, rows)
         bounding_box = self.bounding_box_filter_by_width(object_info)
 
         return bounding_box
@@ -113,7 +114,7 @@ class Detection(object):
 if __name__ == "__main__":
     width, height = 1024, 720
     prototxt_path, caffemodel_path = "../resources/MobileNetSSD_test.prototxt", "../resources/lpr.caffemodel"
-    test_dir = "../27490"
+    test_dir = "../21901"
     for f in os.listdir(test_dir):
         if f.endswith(".jpg"):
             image_path = test_dir + "/" + f
