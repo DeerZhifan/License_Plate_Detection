@@ -3,6 +3,7 @@ from algo.license_detection import Detection
 from algo.add_watermark import AddWaterMark
 from PIL import Image
 import os
+import time
 
 
 class Main(object):
@@ -34,13 +35,19 @@ class Main(object):
 
 
 if __name__ == "__main__":
-    test_dir = "./21901"
+    test_dir = "./benz"
     watermark_path = "./resources/watermark.png"
     width, height = 1024, 720
     prototxt_path, caffemodel_path = "./resources/MobileNetSSD_test.prototxt", "./resources/lpr.caffemodel"
+    time_recorde  =[]
     for image_name in os.listdir(test_dir):
-        print(image_name)
+        start_time = time.time()
         if image_name.endswith(".jpg"):
             image_path = test_dir + "/" + image_name
             engine = Main(image_path, image_name, watermark_path, width, height, prototxt_path, caffemodel_path)
             engine.main()
+            end_time = time.time()
+            cost_time = end_time - start_time
+            time_recorde.append(cost_time)
+            print(image_name, "Cost time: {:.3f}s".format(cost_time))
+    print("average time : {}".format(sum(time_recorde) / len(time_recorde)))

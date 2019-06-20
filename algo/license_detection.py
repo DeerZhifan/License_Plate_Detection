@@ -45,7 +45,7 @@ class Detection(object):
 
     def get_detections(self):
         """车牌框检测"""
-        blob = dnn.blobFromImage(self.image, self.scale_factor, (self.width, self.height), self.mean, swapRB=True)
+        blob = dnn.blobFromImage(self.image, self.scale_factor, (self.width, self.height), self.mean, swapRB=False)
         net = dnn.readNetFromCaffe(self.prototxt_path, self.caffemodel_path)
         net.setInput(blob)
         start_time = time.time()
@@ -114,7 +114,7 @@ class Detection(object):
 if __name__ == "__main__":
     width, height = 1024, 720
     prototxt_path, caffemodel_path = "../resources/MobileNetSSD_test.prototxt", "../resources/lpr.caffemodel"
-    test_dir = "../21901"
+    test_dir = "../test"
     for f in os.listdir(test_dir):
         if f.endswith(".jpg"):
             image_path = test_dir + "/" + f
